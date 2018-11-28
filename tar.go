@@ -1,4 +1,4 @@
-package sqlfsutil
+package tar
 
 // The following example shows how to create a tarball as a table in the SQLFS.
 /*
@@ -39,19 +39,21 @@ func Tar(w io.Writer, dir string, inc include, compress bool) (e error) {
 	}
 	defer tw.Close()
 
-	return recursiveTar(tw, dir, inc, compress)
+	return recursiveTar(tw, dir, "", inc, compress)
 }
 
-func recursiveTar(tw *tar.Writer, dir string, inc include, compress bool) (e error) {
-	fis, e := ioutil.ReadDir(dir)
+func recursiveTar(tw *tar.Writer, dir, relative string, inc include, compress bool) (e error) {
+	abs := path.Join(dir, relative)
+	fis, e := ioutil.ReadDir(abs)
 	if e != nil {
-		return fmt.Errorf("Tar: ReadDir(%s) failed: %v", dir, e)
+		return fmt.Errorf("Tar: ReadDir(%s) failed: %v", abs, e)
 	}
+
 	for _, fs := range fis {
-		if inc != nil && inc(dir, fs) { // Include only certain files.
-			fn := path.Join(dir, fs.Name())
+		if inc == nil || inc(abs, fs) { // Include only certain files.
+			fn := path.Join(relative, fs.Name())
 			if fs.IsDir() {
-				if e = recursiveTar(tw, fn, inc, compress); e != nil {
+				if e = recursiveTar(tw, dir, fn, inc, compress); e != nil {
 					return e
 				}
 			} else {
@@ -62,11 +64,14 @@ func recursiveTar(tw *tar.Writer, dir string, inc include, compress bool) (e err
 					return fmt.Errorf("Tar: WriteHeader(%s): %v", fn, e)
 				}
 
-				f, e := os.Open(fn)
+				f, e := os.Open(path.Join(dir, fn))
 				if e != nil {
 					return fmt.Errorf("Tar: cannot open %s: %v", fn, e)
 				}
-				_, e = io.Copy(tw, f)
+				n, e := io.Copy(tw, f)
+				if n != fs.Size() {
+					return fmt.Errorf("Tar: copied %d of %d bytes of %s", n, fs.Size(), fn)
+				}
 				if e != nil {
 					return fmt.Errorf("Tar: failed to copy %s: %v", fn, e)
 				}
