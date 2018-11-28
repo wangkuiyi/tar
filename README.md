@@ -1,5 +1,7 @@
 # `tar`
 
+![](https://travis-ci.org/wangkuiyi/tar.svg?branch=develop)
+
 To create a gziped tarball, simply call
 
 ```go
