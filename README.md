@@ -7,7 +7,7 @@ tarfile, _ := os.Create("/tmp/my.tar.gz")
 Tar(tarfile, dir, nil, true)
 ```
 
-To create a tarball in a SQL table by taking the table as a filesystem:
+To create a tarball in a SQL table by taking the table as a filesystem, we can use the [`sqlfs`](https://github.com/wangkuiyi/sqlfs) package:
 
 ```go
 func Tar(db *sql.DB, dir string, inc include, compress bool) (e error) {
