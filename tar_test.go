@@ -1,7 +1,6 @@
-package sqlfsutil
+package tar
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -29,17 +28,17 @@ func TestRecursiveTar(t *testing.T) {
 	}
 
 	fn := filepath.Join(dir, "a")
-	ioutil.WriteFile(fn, bytes('a'), 0600)
+	ioutil.WriteFile(fn, bytes('a'), 0700)
 
-	a.NoError(os.Mkdir(path.Join(dir, "b"), 0600))
+	a.NoError(os.Mkdir(path.Join(dir, "b"), 0700))
 	fn = filepath.Join(dir, "b", "b")
-	ioutil.WriteFile(fn, bytes('b'), 0600)
+	ioutil.WriteFile(fn, bytes('b'), 0700)
 
-	f, e := ioutil.TempFile("", "*")
+	f, e := ioutil.TempFile("", "*.tar.gz")
 	a.NoError(e)
+	defer os.RemoveAll(f.Name())
 
 	a.NoError(Tar(f, dir, nil, true))
 
 	a.NoError(exec.Command("tar", "-C", dir, "-xzf", f.Name()).Run())
-	fmt.Println(dir)
 }
