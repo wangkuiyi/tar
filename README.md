@@ -22,6 +22,6 @@ func Tar(db *sql.DB, dir string, inc include, compress bool) (e error) {
 	}
 	defer func() { e = sqlf.Close() }()
 
-	return TarDir(sqlf, dir, inc, compress)
+	return tar.Tar(sqlf, dir, inc, compress)
 }
 ```
