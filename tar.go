@@ -28,21 +28,16 @@ import (
 type include func(dir, relative string, fi os.FileInfo) bool
 
 // Tar a directory into a writer.
-func Tar(w io.Writer, dir string, inc include, compress bool) (e error) {
-	var tw *tar.Writer
-	if compress {
-		gw := gzip.NewWriter(w)
-		defer gw.Close()
-		tw = tar.NewWriter(gw)
-	} else {
-		tw = tar.NewWriter(w)
-	}
+func Tar(w io.Writer, dir string, inc include) (e error) {
+	gw := gzip.NewWriter(w)
+	defer gw.Close()
+	tw := tar.NewWriter(gw)
 	defer tw.Close()
 
-	return recursiveTar(tw, dir, "", inc, compress)
+	return recursiveTar(tw, dir, "", inc)
 }
 
-func recursiveTar(tw *tar.Writer, dir, relative string, inc include, compress bool) (e error) {
+func recursiveTar(tw *tar.Writer, dir, relative string, inc include) (e error) {
 	abs := path.Join(dir, relative)
 	fis, e := ioutil.ReadDir(abs)
 	if e != nil {
@@ -53,7 +48,7 @@ func recursiveTar(tw *tar.Writer, dir, relative string, inc include, compress bo
 		if inc == nil || inc(dir, relative, fs) { // Include only certain files.
 			fn := path.Join(relative, fs.Name())
 			if fs.IsDir() {
-				if e = recursiveTar(tw, dir, fn, inc, compress); e != nil {
+				if e = recursiveTar(tw, dir, fn, inc); e != nil {
 					return e
 				}
 			} else {
