@@ -25,6 +25,7 @@ func TestRecursiveTar(t *testing.T) {
 	defer os.RemoveAll(f.Name())
 
 	a.NoError(Tar(f, dir, nil))
+	f.Close()
 
 	o, e := exec.Command("tar", "-ztf", f.Name()).Output()
 	a.NoError(e)
@@ -43,6 +44,7 @@ func TestRecursiveTarWithIncludeFileter(t *testing.T) {
 		return level == 0 // only files in the top directory level.
 	}
 	a.NoError(Tar(f, dir, inc))
+	f.Close()
 
 	o, e := exec.Command("tar", "-ztf", f.Name()).Output()
 	a.NoError(e)
