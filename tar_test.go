@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -28,6 +29,24 @@ func TestRecursiveTar(t *testing.T) {
 	o, e := exec.Command("tar", "-ztf", f.Name()).Output()
 	a.NoError(e)
 	a.Equal("a\nb/b\n", string(o))
+}
+
+func TestRecursiveTarWithIncludeFileter(t *testing.T) {
+	a := assert.New(t)
+
+	f, e := ioutil.TempFile("", "*.tar.gz")
+	a.NoError(e)
+	defer os.RemoveAll(f.Name())
+
+	inc := func(dir, relative string, fi os.FileInfo) bool {
+		level := len(strings.Split(path.Join(relative, fi.Name()), "/")) - 1
+		return level == 0 // only files in the top directory level.
+	}
+	a.NoError(Tar(f, dir, inc, true))
+
+	o, e := exec.Command("tar", "-ztf", f.Name()).Output()
+	a.NoError(e)
+	a.Equal("a\n", string(o))
 }
 
 // Create a directory hierarchy in a temporary directory and returns
