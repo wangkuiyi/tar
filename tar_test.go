@@ -40,5 +40,7 @@ func TestRecursiveTar(t *testing.T) {
 
 	a.NoError(Tar(f, dir, nil, true))
 
-	a.NoError(exec.Command("tar", "-C", dir, "-xzf", f.Name()).Run())
+	o, e := exec.Command("tar", "-ztf", f.Name()).Output()
+	a.NoError(e)
+	a.Equal("a\nb/b\n", string(o))
 }
