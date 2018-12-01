@@ -25,7 +25,7 @@ import (
 	"path"
 )
 
-type include func(dir string, fi os.FileInfo) bool
+type include func(dir, relative string, fi os.FileInfo) bool
 
 // Tar a directory into a writer.
 func Tar(w io.Writer, dir string, inc include, compress bool) (e error) {
@@ -50,7 +50,7 @@ func recursiveTar(tw *tar.Writer, dir, relative string, inc include, compress bo
 	}
 
 	for _, fs := range fis {
-		if inc == nil || inc(abs, fs) { // Include only certain files.
+		if inc == nil || inc(dir, relative, fs) { // Include only certain files.
 			fn := path.Join(relative, fs.Name())
 			if fs.IsDir() {
 				if e = recursiveTar(tw, dir, fn, inc, compress); e != nil {
