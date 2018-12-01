@@ -3,6 +3,7 @@ package tar
 import (
 	"archive/tar"
 	"compress/gzip"
+	"fmt"
 	"io"
 	"os"
 	"path"
@@ -32,10 +33,16 @@ func Untar(r io.Reader, dir string) (e error) {
 		if e != nil {
 			return e
 		}
-		if _, e := io.Copy(w, tr); e != nil {
+		n, e := io.Copy(w, tr)
+		if e != nil {
 			return e
 		}
+		if n != hdr.Size {
+			return fmt.Errorf("Read %d of %d bytes of %s", n, hdr.Size, hdr.Name)
+		}
 		w.Close()
+
+		_, e = os.Stat(fn)
 	}
 	return nil
 }

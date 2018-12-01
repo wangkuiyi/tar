@@ -3,6 +3,7 @@ package tar
 import (
 	"io/ioutil"
 	"os"
+	"path"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -26,4 +27,8 @@ func TestUntar(t *testing.T) {
 	defer os.RemoveAll(untar)
 
 	a.NoError(Untar(r, untar))
+	_, e = os.Stat(path.Join(untar, "a"))
+	a.False(os.IsNotExist(e))
+	_, e = os.Stat(path.Join(untar, "b/b"))
+	a.False(os.IsNotExist(e))
 }
